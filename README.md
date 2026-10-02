@@ -22,7 +22,7 @@ A **Fabric** mod for **Minecraft Java Edition 26.3 (Wilderness Bound)**. Breed t
 | 8 or more           | 90 % (max) |
 
 - The puppy, whether wolf or pug, inherits its parents' generation + 1, so the lineage keeps counting on every breeding.
-- The pug is a full pet: it can sit, follows its owner, keeps the collar color inherited from its parents, and can wear wolf armor. It is 30 % smaller than a wolf.
+- The pug is a full pet: it can sit and follows its owner. It is 30 % smaller than a wolf.
 - Includes a **pug spawn egg** (in the Spawn Eggs tab of the creative inventory, or `/give @s minepug:pug_spawn_egg`). Using the egg on an adult pug produces a baby pug.
 
 ## Pug behavior

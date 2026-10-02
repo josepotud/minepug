@@ -44,27 +44,29 @@ public class PugModel extends EntityModel<WolfRenderState> {
 		PartDefinition root = mesh.getRoot();
 
 		// Cabeza grande (7x7x7) con orejas caídas y hocico.
+		// El pivote está en el cuello (borde inferior-trasero de la cabeza)
+		// para que al girar la cabeza lo haga de forma natural.
 		PartDefinition head = root.addOrReplaceChild(
-				"head", CubeListBuilder.create(), PartPose.offset(0.5F, 24.5F, -5.0F)
+				"head", CubeListBuilder.create(), PartPose.offset(0.5F, 10.5F, -4.5F)
 		);
 		head.addOrReplaceChild(
 				"head_main",
-				CubeListBuilder.create().texOffs(0, 20).addBox(-4.0F, -15.0F, -6.0F, 7.0F, 7.0F, 7.0F),
+				CubeListBuilder.create().texOffs(0, 20).addBox(-4.0F, -1.0F, -6.5F, 7.0F, 7.0F, 7.0F),
 				PartPose.ZERO
 		);
 		head.addOrReplaceChild(
 				"left_ear",
-				CubeListBuilder.create().texOffs(0, 34).addBox(2.75F, -14.75F, -4.25F, 1.0F, 4.0F, 4.0F),
+				CubeListBuilder.create().texOffs(0, 34).addBox(2.75F, -0.75F, -4.75F, 1.0F, 4.0F, 4.0F),
 				PartPose.ZERO
 		);
 		head.addOrReplaceChild(
 				"right_ear",
-				CubeListBuilder.create().texOffs(33, 20).addBox(-4.75F, -14.75F, -4.25F, 1.0F, 4.0F, 4.0F),
+				CubeListBuilder.create().texOffs(33, 20).addBox(-4.75F, -0.75F, -4.75F, 1.0F, 4.0F, 4.0F),
 				PartPose.ZERO
 		);
 		head.addOrReplaceChild(
 				"muzzle_top",
-				CubeListBuilder.create().texOffs(0, 7).addBox(-3.0F, -12.0F, -7.0F, 5.0F, 4.0F, 1.0F),
+				CubeListBuilder.create().texOffs(0, 7).addBox(-3.0F, 2.0F, -7.5F, 5.0F, 4.0F, 1.0F),
 				PartPose.ZERO
 		);
 

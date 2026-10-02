@@ -12,13 +12,11 @@ import net.minecraft.world.item.ItemStack;
  * Renderer del carlino: usa el {@link PugModel} propio (cuerpo rechoncho,
  * cabeza grande, cola rizada) con el estado de render del lobo, para
  * aprovechar las animaciones de andar, sentarse y sacudirse.
- * Añade la capa del collar teñido para los carlinos domesticados.
  */
 public class PugRenderer extends MobRenderer<PugEntity, WolfRenderState, PugModel> {
 
 	public PugRenderer(EntityRendererProvider.Context context) {
 		super(context, new PugModel(PugModel.createBodyLayer().bakeRoot()), 0.5F);
-		this.addLayer(new PugCollarLayer(this));
 	}
 
 	@Override
@@ -36,8 +34,8 @@ public class PugRenderer extends MobRenderer<PugEntity, WolfRenderState, PugMode
 		state.shakeAnim = entity.getShakeAnim(partialTicks);
 		state.texture = entity.getTexture();
 		state.wetShade = entity.getWetShade(partialTicks);
-		state.collarColor = entity.isTame() ? entity.getCollarColor() : null;
-		// Sin armadura: la textura del carlino es propia.
+		// Sin collar ni armadura: todos los carlinos son mascotas.
+		state.collarColor = null;
 		state.bodyArmorItem = ItemStack.EMPTY;
 	}
 
