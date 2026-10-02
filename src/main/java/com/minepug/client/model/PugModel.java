@@ -151,9 +151,10 @@ public class PugModel extends EntityModel<WolfRenderState> {
 		// Sacudida al salir del agua.
 		this.body.zRot = state.getBodyRollAngle(-0.16F);
 
-		// Cabeza: sigue la mirada de la entidad.
+		// Cabeza: sigue la mirada de la entidad e inclina la cabeza por curiosidad.
 		this.head.xRot = state.xRot * (float) (Math.PI / 180.0);
 		this.head.yRot = state.yRot * (float) (Math.PI / 180.0);
+		this.head.zRot = state.headRollAngle + state.getBodyRollAngle(0.0F);
 
 		this.tail.xRot = state.tailAngle;
 	}

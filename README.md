@@ -25,6 +25,16 @@ A **Fabric** mod for **Minecraft Java Edition 26.3 (Wilderness Bound)**. Breed t
 - The pug is a full pet: it can sit, follows its owner, keeps the collar color inherited from its parents, and can wear wolf armor. It is 30 % smaller than a wolf.
 - Includes a **pug spawn egg** (in the Spawn Eggs tab of the creative inventory, or `/give @s minepug:pug_spawn_egg`). Using the egg on an adult pug produces a baby pug.
 
+## Pug behavior
+
+The pug has its own personality on top of the vanilla wolf AI:
+
+- **Less damage** than wolves and **cannot wear wolf armor**.
+- **Alert bark**: when a hostile mob comes close (12 blocks), the pug barks with a sharper pitch than a wolf's growl — even while sitting or away from the player's spawn.
+- **Snacks**: if food (bones, meat, anything edible) is dropped nearby, it walks over, stares at it briefly, and eats it.
+- **Curiosity**: it occasionally approaches players, passive animals, hostile mobs and dropped items, looking at them with a head tilt.
+- **Zoomies**: from time to time it runs in circles for a few seconds, then sits down for a few seconds before going back to normal.
+
 ## Chances
 
 Values live in `src/main/java/com/minepug/MinepugConfig.java`:

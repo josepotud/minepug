@@ -12,11 +12,13 @@ import net.minecraft.world.item.ItemStack;
  * Renderer del carlino: usa el {@link PugModel} propio (cuerpo rechoncho,
  * cabeza grande, cola rizada) con el estado de render del lobo, para
  * aprovechar las animaciones de andar, sentarse y sacudirse.
+ * Añade la capa del collar teñido para los carlinos domesticados.
  */
 public class PugRenderer extends MobRenderer<PugEntity, WolfRenderState, PugModel> {
 
 	public PugRenderer(EntityRendererProvider.Context context) {
 		super(context, new PugModel(PugModel.createBodyLayer().bakeRoot()), 0.5F);
+		this.addLayer(new PugCollarLayer(this));
 	}
 
 	@Override
@@ -28,15 +30,14 @@ public class PugRenderer extends MobRenderer<PugEntity, WolfRenderState, PugMode
 	public void extractRenderState(PugEntity entity, WolfRenderState state, float partialTicks) {
 		super.extractRenderState(entity, state, partialTicks);
 		state.isAngry = entity.isAngry();
-		state.isSitting = entity.isInSittingPose();
+		state.isSitting = entity.isInSittingPose() || entity.isZoomiesSitting();
 		state.tailAngle = entity.getTailAngle();
 		state.headRollAngle = entity.getHeadRollAngle(partialTicks);
 		state.shakeAnim = entity.getShakeAnim(partialTicks);
 		state.texture = entity.getTexture();
 		state.wetShade = entity.getWetShade(partialTicks);
-		// Sin capa de collar ni armadura: la textura del carlino es propia y
-		// no comparte el mapeado UV del modelo de lobo.
-		state.collarColor = null;
+		state.collarColor = entity.isTame() ? entity.getCollarColor() : null;
+		// Sin armadura: la textura del carlino es propia.
 		state.bodyArmorItem = ItemStack.EMPTY;
 	}
 
