@@ -46,7 +46,10 @@ public abstract class AnimalMixin {
 		);
 		int childGeneration = parentsGeneration + 1;
 
-		boolean isPug = level.getRandom().nextDouble() < MinepugConfig.pugChance(parentsGeneration);
+		// Dos carlinos siempre tienen carlinos; mezcla con lobo (o lobo+lobo)
+		// usa la probabilidad por generaciones.
+		boolean bothPugs = mother instanceof PugEntity && father instanceof PugEntity;
+		boolean isPug = bothPugs || level.getRandom().nextDouble() < MinepugConfig.pugChance(parentsGeneration);
 		if (!isPug) {
 			// Cachorro de lobo normal: se sigue contando el linaje.
 			((MinepugWolf) offspring).minepug$setGeneration(childGeneration);

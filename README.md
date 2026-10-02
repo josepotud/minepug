@@ -32,8 +32,9 @@ The pug has its own personality on top of the vanilla wolf AI:
 - **Less damage** than wolves and **cannot wear wolf armor**.
 - **Alert bark**: when a hostile mob comes close (12 blocks), the pug barks with a sharper pitch than a wolf's growl — even while sitting or away from the player's spawn.
 - **Snacks**: if food (bones, meat, anything edible) is dropped nearby, it walks over, stares at it briefly, and eats it.
-- **Curiosity**: it occasionally approaches players, passive animals, hostile mobs and dropped items, looking at them with a head tilt.
-- **Zoomies**: it bursts into running in circles for a few seconds (then sits for a few seconds) when it meets a passive mob, when it runs into a dog it hasn't seen in a while (not always), and occasionally at random.
+- **Curiosity**: it occasionally approaches players, passive animals, hostile mobs and dropped items, staring at them with a head tilt and curiosity sparkles (sparks also pop over whatever caught its eye).
+- **Zoomies**: it bursts into running in circles (with dust puffs at its paws) for a few seconds, then sits for a few seconds, when it meets a passive mob, when it runs into a dog it hasn't seen in a while (not always), and occasionally at random.
+- **Pug + pug breeding always produces a pug**; mixing a pug with a wolf uses the generation-based chance.
 
 ## Chances
 
