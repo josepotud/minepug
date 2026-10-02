@@ -1,0 +1,34 @@
+{
+	"schemaVersion": 1,
+	"id": "minepug",
+	"version": "${version}",
+	"name": "Minepug",
+	"description": "Cría lobos domesticados durante generaciones: cuantas más generaciones tengan los padres, más probable es que el cachorro sea un carlino (pug).",
+	"authors": [
+		"minepug"
+	],
+	"license": "MIT",
+	"icon": "assets/minepug/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.minepug.Minepug"
+		],
+		"client": [
+			"com.minepug.client.MinepugClient"
+		]
+	},
+	"mixins": [
+		"minepug.mixins.json",
+		{
+			"config": "minepug.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.19.5",
+		"minecraft": "~26.3",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}

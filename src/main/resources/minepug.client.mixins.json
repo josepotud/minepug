@@ -1,0 +1,14 @@
+{
+	"required": true,
+	"package": "com.minepug.mixin.client",
+	"compatibilityLevel": "JAVA_25",
+	"mixins": [
+		"EntityRenderersMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"overwrites": {
+		"requireAnnotations": true
+	}
+}

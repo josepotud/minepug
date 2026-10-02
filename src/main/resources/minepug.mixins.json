@@ -1,0 +1,16 @@
+{
+	"required": true,
+	"package": "com.minepug.mixin",
+	"compatibilityLevel": "JAVA_25",
+	"mixins": [
+		"WolfMixin",
+		"AnimalMixin",
+		"DefaultAttributesMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"overwrites": {
+		"requireAnnotations": true
+	}
+}

@@ -1,0 +1,6 @@
+{
+	"parent": "minecraft:item/generated",
+	"textures": {
+		"layer0": "minepug:item/pug_spawn_egg"
+	}
+}
