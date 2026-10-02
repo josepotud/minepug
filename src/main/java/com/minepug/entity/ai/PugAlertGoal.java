@@ -14,21 +14,18 @@ import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
 
 /**
- * Avisa con un ladrido agudo cuando hay monstruos cerca.
- * <p>
- * Usa el gruñido del lobo vanilla con el tono subido ("más agudo que el del
- * perro"). Funciona también cuando el carlino está sentado (solo usa la
- * bandera LOOK) y no depende de estar cerca del punto de aparición del jugador.
+ * Alerta con ladrido agudo cuando hay monstruos cerca. Solo usa la mirada,
+ * así que funciona también cuando el carlino está sentado (la persecución
+ * la hace {@link PugChaseThreatGoal} cuando puede moverse).
  */
 public class PugAlertGoal extends Goal {
 	private static final Identifier WOLF_GROWL = Identifier.withDefaultNamespace("entity.wolf.growl");
 	private static final double ALERT_RANGE = 12.0D;
-	private static final int ALERT_COOLDOWN = 80;
+	private static final int BARK_COOLDOWN = 60;
 
 	private final PugEntity pug;
 	private final ServerLevel level;
 	private Mob threat;
-	private int alertCooldown;
 
 	public PugAlertGoal(PugEntity pug) {
 		this.pug = pug;
@@ -38,11 +35,6 @@ public class PugAlertGoal extends Goal {
 
 	@Override
 	public boolean canUse() {
-		if (this.alertCooldown > 0) {
-			this.alertCooldown--;
-			return false;
-		}
-
 		AABB area = this.pug.getBoundingBox().inflate(ALERT_RANGE);
 		List<Mob> hostiles = this.level.getEntities(EntityTypeTest.forClass(Mob.class), area, mob ->
 				mob != this.pug
@@ -52,7 +44,6 @@ public class PugAlertGoal extends Goal {
 		if (hostiles.isEmpty()) {
 			return false;
 		}
-
 		this.threat = hostiles.stream()
 				.min(Comparator.comparingDouble(this.pug::distanceToSqr))
 				.orElseThrow();
@@ -60,19 +51,25 @@ public class PugAlertGoal extends Goal {
 	}
 
 	@Override
+	public boolean canContinueToUse() {
+		return this.threat != null && this.threat.isAlive();
+	}
+
+	@Override
 	public void start() {
-		// Ladrido de alerta: el gruñido del lobo, más agudo.
-		this.pug.level().registryAccess().lookupOrThrow(Registries.SOUND_EVENT)
-				.get(WOLF_GROWL)
-				.ifPresent(holder -> this.pug.playSound(holder.value(), 1.0F, 1.35F));
+		if (this.pug.canPugBark(BARK_COOLDOWN)) {
+			this.pug.markPugBarked();
+			this.pug.level().registryAccess().lookupOrThrow(Registries.SOUND_EVENT)
+					.get(WOLF_GROWL)
+					.ifPresent(holder -> this.pug.playSound(holder.value(), 1.0F, 1.35F));
+		}
 		this.pug.setIsInterested(true);
-		this.alertCooldown = ALERT_COOLDOWN;
 	}
 
 	@Override
 	public void tick() {
 		if (this.threat != null && this.threat.isAlive()) {
-			this.pug.getLookControl().setLookAt(this.threat, 10.0F, this.pug.getMaxHeadXRot());
+			this.pug.getLookControl().setLookAt(this.threat, 20.0F, this.pug.getMaxHeadXRot());
 		}
 	}
 

@@ -55,6 +55,11 @@ public abstract class AnimalMixin {
 			((MinepugWolf) offspring).minepug$setGeneration(childGeneration);
 			return offspring;
 		}
+		if (offspring instanceof PugEntity existingPug) {
+			// La cría ya es un carlino (padres carlinos): solo ajusta la generación.
+			((MinepugWolf) existingPug).minepug$setGeneration(childGeneration);
+			return existingPug;
+		}
 
 		PugEntity pug = MinepugEntityTypes.PUG.create(level, EntitySpawnReason.BREEDING);
 		if (pug == null) {

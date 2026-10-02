@@ -1,6 +1,7 @@
 package com.minepug;
 
 import com.minepug.entity.ai.PugAlertGoal;
+import com.minepug.entity.ai.PugChaseThreatGoal;
 import com.minepug.entity.ai.PugCuriosityGoal;
 import com.minepug.entity.ai.PugEatDroppedFoodGoal;
 import com.minepug.entity.ai.PugZoomiesGoal;
@@ -32,7 +33,8 @@ import net.minecraft.world.level.Level;
  * (sentarse, seguir al dueño...), con estas diferencias:
  * <ul>
  *   <li>Hace menos daño y no puede llevar armadura.</li>
- *   <li>Ladra (más agudo que el del lobo) cuando detecta monstruos cerca, sentado o no.</li>
+ *   <li>Ladra (más agudo que el del lobo) cuando detecta monstruos cerca, sentado o no,
+ *       y persigue a los que puede alcanzar sin llegar a atacarlos.</li>
  *   <li>Se come la comida que se cae al suelo (con un breve retraso).</li>
  *   <li>Se acerca con curiosidad a jugadores, animales, monstruos y objetos.</li>
  *   <li>Hace zoomies al encontrarse con mobs pacíficos, al reencontrarse con
@@ -67,7 +69,10 @@ public class PugEntity extends Wolf {
 	@Override
 	protected void registerGoals() {
 		super.registerGoals();
-		this.goalSelector.addGoal(3, new PugAlertGoal(this));
+		// La persecución va por delante de la alerta: si puede perseguir, persigue;
+		// si está sentado (bandera MOVE bloqueada), solo alerta con la mirada.
+		this.goalSelector.addGoal(3, new PugChaseThreatGoal(this));
+		this.goalSelector.addGoal(4, new PugAlertGoal(this));
 		this.goalSelector.addGoal(4, new PugZoomiesGoal(this));
 		this.goalSelector.addGoal(5, new PugEatDroppedFoodGoal(this));
 		this.goalSelector.addGoal(5, new PugCuriosityGoal(this));
@@ -146,11 +151,25 @@ public class PugEntity extends Wolf {
 		this.pugKnownMobs.put(id, this.tickCount);
 	}
 
+	/** Cooldown compartido de ladrido (lo usan el goal de alerta y el de persecución). */
+	private int pugLastBarkTick = -1000;
+
+	public boolean canPugBark(int cooldownTicks) {
+		return this.tickCount - this.pugLastBarkTick >= cooldownTicks;
+	}
+
+	public void markPugBarked() {
+		this.pugLastBarkTick = this.tickCount;
+	}
+
 	/**
 	 * Cuando se usa un huevo generador sobre un carlino adulto, el juego pide la
 	 * cría con el propio animal como "pareja" ({@code partner == this}). En ese
 	 * caso la cría debe ser un carlino y no un lobo. La cría por reproducción
 	 * normal pasa por {@code super} y la decide {@code AnimalMixin}.
+	 * <p>
+	 * Además, como red de seguridad, si la pareja es otro carlino la cría
+	 * siempre es un carlino.
 	 */
 	@Override
 	public Wolf getBreedOffspring(ServerLevel level, AgeableMob partner) {
@@ -163,6 +182,18 @@ public class PugEntity extends Wolf {
 				baby.setOwnerReference(this.getOwnerReference());
 				baby.setTame(true, true);
 				((MinepugWolf) baby).minepug$setCollarColor(this.getCollarColor());
+			}
+			return baby;
+		}
+		if (partner instanceof PugEntity) {
+			PugEntity baby = MinepugEntityTypes.PUG.create(level, EntitySpawnReason.BREEDING);
+			if (baby != null) {
+				if (this.isTame()) {
+					baby.setOwnerReference(this.getOwnerReference());
+					baby.setTame(true, true);
+					((MinepugWolf) baby).minepug$setCollarColor(this.getCollarColor());
+				}
+				((MinepugWolf) baby).minepug$setGeneration(((MinepugWolf) this).minepug$getGeneration() + 1);
 			}
 			return baby;
 		}

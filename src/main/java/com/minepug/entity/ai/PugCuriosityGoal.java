@@ -4,7 +4,6 @@ import com.minepug.PugEntity;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
@@ -18,17 +17,16 @@ import net.minecraft.world.phys.AABB;
 
 /**
  * El carlino se acerca con curiosidad a jugadores, animales, monstruos y
- * objetos tirados en el suelo, los mira e inclina la cabeza (interés).
- * Mientras observa suelta chispas de curiosidad, y al fijarse en algo
- * aparecen chispas sobre el objetivo para que se note a qué atiende.
+ * objetos tirados en el suelo. Al fijarse en algo se planta y lo mira
+ * girando la cabeza e inclinándola, sin partículas.
  */
 public class PugCuriosityGoal extends Goal {
 	private static final double SEARCH_RANGE = 10.0D;
-	private static final int MIN_CURIOSITY_TIME = 80;
-	private static final int MAX_EXTRA_CURIOSITY_TIME = 80;
+	private static final int MIN_CURIOSITY_TIME = 100;
+	private static final int MAX_EXTRA_CURIOSITY_TIME = 100;
 	private static final int MIN_COOLDOWN = 200;
 	private static final int MAX_EXTRA_COOLDOWN = 200;
-	private static final int PARTICLE_INTERVAL = 15;
+	private static final float LOOK_SPEED = 30.0F;
 
 	private final PugEntity pug;
 	private final ServerLevel level;
@@ -36,7 +34,6 @@ public class PugCuriosityGoal extends Goal {
 	private double stopDistance;
 	private int curiosityTime;
 	private int cooldownTicks;
-	private int particleTicks;
 
 	public PugCuriosityGoal(PugEntity pug) {
 		this.pug = pug;
@@ -89,15 +86,7 @@ public class PugCuriosityGoal extends Goal {
 	@Override
 	public void start() {
 		this.curiosityTime = MIN_CURIOSITY_TIME + this.pug.getRandom().nextInt(MAX_EXTRA_CURIOSITY_TIME);
-		this.particleTicks = 0;
 		this.pug.setIsInterested(true);
-
-		// Chispas sobre el objetivo: deja claro a qué le está prestando atención.
-		if (this.curiosityTarget != null) {
-			this.level.sendParticles(ParticleTypes.HAPPY_VILLAGER,
-					this.curiosityTarget.getX(), this.curiosityTarget.getEyeY() + 0.3D, this.curiosityTarget.getZ(),
-					5, 0.3D, 0.3D, 0.3D, 0.0D);
-		}
 	}
 
 	@Override
@@ -107,21 +96,13 @@ public class PugCuriosityGoal extends Goal {
 			return;
 		}
 
-		this.pug.getLookControl().setLookAt(this.curiosityTarget, 10.0F, this.pug.getMaxHeadXRot());
+		this.pug.getLookControl().setLookAt(this.curiosityTarget, LOOK_SPEED, this.pug.getMaxHeadXRot());
 		if (this.pug.distanceTo(this.curiosityTarget) > this.stopDistance) {
 			this.pug.getNavigation().moveTo(this.curiosityTarget, 1.0D);
 		} else {
 			this.pug.getNavigation().stop();
 		}
 		this.curiosityTime--;
-
-		// Chispas sobre la cabeza del carlino mientras observa.
-		this.particleTicks++;
-		if (this.particleTicks % PARTICLE_INTERVAL == 0) {
-			this.level.sendParticles(ParticleTypes.HAPPY_VILLAGER,
-					this.pug.getX(), this.pug.getY() + this.pug.getBbHeight() + 0.2D, this.pug.getZ(),
-					1, 0.25D, 0.15D, 0.25D, 0.0D);
-		}
 	}
 
 	@Override
