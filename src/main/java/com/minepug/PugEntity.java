@@ -4,6 +4,10 @@ import com.minepug.entity.ai.PugAlertGoal;
 import com.minepug.entity.ai.PugCuriosityGoal;
 import com.minepug.entity.ai.PugEatDroppedFoodGoal;
 import com.minepug.entity.ai.PugZoomiesGoal;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -31,7 +35,8 @@ import net.minecraft.world.level.Level;
  *   <li>Ladra (más agudo que el del lobo) cuando detecta monstruos cerca, sentado o no.</li>
  *   <li>Se come la comida que se cae al suelo (con un breve retraso).</li>
  *   <li>Se acerca con curiosidad a jugadores, animales, monstruos y objetos.</li>
- *   <li>De vez en cuando corre en círculos y luego se sienta unos segundos.</li>
+ *   <li>Hace zoomies al encontrarse con mobs pacíficos, al reencontrarse con
+ *       perros que no veía desde hace rato, o de forma aleatoria poco frecuente.</li>
  * </ul>
  */
 public class PugEntity extends Wolf {
@@ -117,6 +122,28 @@ public class PugEntity extends Wolf {
 
 	public void setZoomiesSitting(boolean zoomiesSitting) {
 		this.entityData.set(DATA_ZOOMIES_SITTING, zoomiesSitting);
+	}
+
+	/**
+	 * Memoria de mobs vistos recientemente (para detectar reencuentros).
+	 * Solo se usa en el servidor.
+	 */
+	private final Map<UUID, Integer> pugKnownMobs = new HashMap<>();
+
+	/** ¿Se vio a este mob hace menos de {@code ticks}? */
+	public boolean pugHasSeenRecently(UUID id, int ticks) {
+		Integer lastSeen = this.pugKnownMobs.get(id);
+		return lastSeen != null && (this.tickCount - lastSeen) < ticks;
+	}
+
+	/** Registra que el carlino acaba de ver a este mob. */
+	public void pugMarkSeen(UUID id) {
+		if (this.pugKnownMobs.size() > 64 && !this.pugKnownMobs.containsKey(id)) {
+			this.pugKnownMobs.entrySet().stream()
+					.min(Comparator.comparingInt(Map.Entry::getValue))
+					.ifPresent(entry -> this.pugKnownMobs.remove(entry.getKey()));
+		}
+		this.pugKnownMobs.put(id, this.tickCount);
 	}
 
 	/**

@@ -33,7 +33,7 @@ The pug has its own personality on top of the vanilla wolf AI:
 - **Alert bark**: when a hostile mob comes close (12 blocks), the pug barks with a sharper pitch than a wolf's growl — even while sitting or away from the player's spawn.
 - **Snacks**: if food (bones, meat, anything edible) is dropped nearby, it walks over, stares at it briefly, and eats it.
 - **Curiosity**: it occasionally approaches players, passive animals, hostile mobs and dropped items, looking at them with a head tilt.
-- **Zoomies**: from time to time it runs in circles for a few seconds, then sits down for a few seconds before going back to normal.
+- **Zoomies**: it bursts into running in circles for a few seconds (then sits for a few seconds) when it meets a passive mob, when it runs into a dog it hasn't seen in a while (not always), and occasionally at random.
 
 ## Chances
 
