@@ -151,17 +151,12 @@ public class PugZoomiesGoal extends Goal {
 		double targetZ = this.center.z + Math.sin(this.circleAngle) * this.circleRadius;
 		this.pug.getMoveControl().setWantedPosition(targetX, this.center.y, targetZ, RUN_SPEED);
 
-		// Polvo en las patas y chispas de alegría mientras corre.
+		// Polvo en las patas mientras corre.
 		this.particleTicks++;
 		if (this.particleTicks % 4 == 0) {
 			this.level.sendParticles(ParticleTypes.CLOUD,
 					this.pug.getX(), this.pug.getY() + 0.1D, this.pug.getZ(),
 					2, 0.25D, 0.05D, 0.25D, 0.01D);
-		}
-		if (this.particleTicks % 12 == 0) {
-			this.level.sendParticles(ParticleTypes.HAPPY_VILLAGER,
-					this.pug.getX(), this.pug.getY() + this.pug.getBbHeight() + 0.2D, this.pug.getZ(),
-					2, 0.3D, 0.2D, 0.3D, 0.0D);
 		}
 
 		this.runTicks--;
@@ -170,9 +165,6 @@ public class PugZoomiesGoal extends Goal {
 			this.pug.setZoomiesSitting(true);
 			this.pug.getNavigation().stop();
 			this.pug.getMoveControl().setWait();
-			this.level.sendParticles(ParticleTypes.HAPPY_VILLAGER,
-					this.pug.getX(), this.pug.getY() + this.pug.getBbHeight() + 0.3D, this.pug.getZ(),
-					5, 0.35D, 0.25D, 0.35D, 0.0D);
 		}
 	}
 
