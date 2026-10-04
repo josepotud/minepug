@@ -53,7 +53,8 @@ public class PugCuriosityGoal extends Goal {
 		}
 
 		List<Entity> candidates = new ArrayList<>();
-		AABB area = this.pug.getBoundingBox().inflate(SEARCH_RANGE);
+		double searchRange = SEARCH_RANGE * this.pug.getAmbientDistanceMultiplier();
+		AABB area = this.pug.getBoundingBox().inflate(searchRange);
 
 		this.level.getEntities(EntityTypeTest.forClass(Entity.class), area, entity ->
 				entity != this.pug
@@ -109,6 +110,8 @@ public class PugCuriosityGoal extends Goal {
 	public void stop() {
 		this.pug.setIsInterested(false);
 		this.curiosityTarget = null;
-		this.cooldownTicks = MIN_COOLDOWN + this.pug.getRandom().nextInt(MAX_EXTRA_COOLDOWN);
+		// Los falderos tienen menos curiosidad ambiental.
+		double multiplier = 1.0D + this.pug.getClinginess() * 2.0D;
+		this.cooldownTicks = (int) ((MIN_COOLDOWN + this.pug.getRandom().nextInt(MAX_EXTRA_COOLDOWN)) * multiplier);
 	}
 }

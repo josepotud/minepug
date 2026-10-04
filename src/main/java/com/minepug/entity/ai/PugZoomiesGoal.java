@@ -72,8 +72,9 @@ public class PugZoomiesGoal extends Goal {
 			return true;
 		}
 
-		// Zoomies aleatorios, poco frecuentes.
-		return this.pug.getRandom().nextInt(RANDOM_ZOOMIES_CHANCE) == 0;
+		// Zoomies aleatorios, poco frecuentes (más raros si es faldero).
+		int divisor = (int) (RANDOM_ZOOMIES_CHANCE * (1.0D + this.pug.getClinginess()));
+		return this.pug.getRandom().nextInt(divisor) == 0;
 	}
 
 	/**
@@ -87,7 +88,8 @@ public class PugZoomiesGoal extends Goal {
 		}
 		this.scanTicks = SCAN_INTERVAL;
 
-		AABB area = this.pug.getBoundingBox().inflate(ENCOUNTER_RANGE);
+		double encounterRange = ENCOUNTER_RANGE * this.pug.getAmbientDistanceMultiplier();
+		AABB area = this.pug.getBoundingBox().inflate(encounterRange);
 		List<Animal> animals = this.level.getEntities(EntityTypeTest.forClass(Animal.class), area, animal ->
 				animal != this.pug && animal.isAlive()
 		);
@@ -100,7 +102,9 @@ public class PugZoomiesGoal extends Goal {
 			this.pug.pugMarkSeen(animal.getUUID());
 
 			if (newEncounter) {
-				float chance = isDog ? DOG_REUNION_CHANCE : PASSIVE_ENCOUNTER_CHANCE;
+				// Los falderos hacen menos caso a las cosas ambientales.
+				float chance = (isDog ? DOG_REUNION_CHANCE : PASSIVE_ENCOUNTER_CHANCE)
+						* (1.0F - 0.5F * this.pug.getClinginess());
 				if (this.pug.getRandom().nextFloat() < chance) {
 					trigger = true;
 				}
@@ -137,7 +141,7 @@ public class PugZoomiesGoal extends Goal {
 		if (this.sitting) {
 			this.sitTicks--;
 			if (this.sitTicks <= 0) {
-				this.pug.setZoomiesSitting(false);
+				this.pug.setVoluntarySitting(false);
 				this.done = true;
 				this.cooldownTicks = COOLDOWN_AFTER_ZOOMIES + this.pug.getRandom().nextInt(MAX_EXTRA_COOLDOWN_AFTER_ZOOMIES);
 			}
@@ -162,7 +166,7 @@ public class PugZoomiesGoal extends Goal {
 		this.runTicks--;
 		if (this.runTicks <= 0) {
 			this.sitting = true;
-			this.pug.setZoomiesSitting(true);
+			this.pug.setVoluntarySitting(true);
 			this.pug.getNavigation().stop();
 			this.pug.getMoveControl().setWait();
 		}
@@ -171,7 +175,7 @@ public class PugZoomiesGoal extends Goal {
 	@Override
 	public void stop() {
 		if (this.sitting) {
-			this.pug.setZoomiesSitting(false);
+			this.pug.setVoluntarySitting(false);
 		}
 		this.pug.getMoveControl().setWait();
 		this.pug.getNavigation().stop();

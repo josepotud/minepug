@@ -116,7 +116,8 @@ public class PugChaseThreatGoal extends Goal {
 	 * (creeper, ghast, warden) se dejan para la alerta de la mirada.
 	 */
 	private Mob findThreat(double range) {
-		AABB area = this.pug.getBoundingBox().inflate(range);
+		double effectiveRange = range * this.pug.getAmbientDistanceMultiplier();
+		AABB area = this.pug.getBoundingBox().inflate(effectiveRange);
 		List<Mob> hostiles = this.level.getEntities(EntityTypeTest.forClass(Mob.class), area, mob ->
 				mob != this.pug
 						&& mob.isAlive()

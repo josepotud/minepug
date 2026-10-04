@@ -28,7 +28,7 @@ public class PugRenderer extends MobRenderer<PugEntity, WolfRenderState, PugMode
 	public void extractRenderState(PugEntity entity, WolfRenderState state, float partialTicks) {
 		super.extractRenderState(entity, state, partialTicks);
 		state.isAngry = entity.isAngry();
-		state.isSitting = entity.isInSittingPose() || entity.isZoomiesSitting();
+		state.isSitting = entity.isInSittingPose() || entity.isVoluntarySitting();
 		state.tailAngle = entity.getTailAngle();
 		state.headRollAngle = entity.getHeadRollAngle(partialTicks);
 		state.shakeAnim = entity.getShakeAnim(partialTicks);
