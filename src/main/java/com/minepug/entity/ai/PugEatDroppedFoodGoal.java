@@ -4,6 +4,7 @@ import com.minepug.PugEntity;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -100,8 +101,11 @@ public class PugEatDroppedFoodGoal extends Goal {
 
 		this.pug.getNavigation().stop();
 
-		// Fase 1: olisquear el objeto.
+		// Fase 1: olisquear el objeto (con un bufido al empezar).
 		if (!this.sniffed) {
+			if (this.sniffTicks == 0) {
+				this.pug.pugPlaySound(Identifier.withDefaultNamespace("entity.wolf.pant"), 0.6F, 0.7F);
+			}
 			this.sniffTicks++;
 			if (this.sniffTicks >= SNIFF_TICKS) {
 				this.sniffed = true;

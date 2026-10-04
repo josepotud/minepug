@@ -4,31 +4,31 @@ import com.minepug.PugEntity;
 import com.minepug.client.model.PugModel;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
-import net.minecraft.client.renderer.entity.state.WolfRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
 /**
  * Renderer del carlino: usa el {@link PugModel} propio (cuerpo rechoncho,
- * cabeza grande, cola rizada) con el estado de render del lobo, para
- * aprovechar las animaciones de andar, sentarse y sacudirse.
+ * cabeza grande, cola rizada) con un estado de render extendido que añade
+ * la pose de tumbado (sploot).
  */
-public class PugRenderer extends MobRenderer<PugEntity, WolfRenderState, PugModel> {
+public class PugRenderer extends MobRenderer<PugEntity, PugRenderState, PugModel> {
 
 	public PugRenderer(EntityRendererProvider.Context context) {
 		super(context, new PugModel(PugModel.createBodyLayer().bakeRoot()), 0.5F);
 	}
 
 	@Override
-	public WolfRenderState createRenderState() {
-		return new WolfRenderState();
+	public PugRenderState createRenderState() {
+		return new PugRenderState();
 	}
 
 	@Override
-	public void extractRenderState(PugEntity entity, WolfRenderState state, float partialTicks) {
+	public void extractRenderState(PugEntity entity, PugRenderState state, float partialTicks) {
 		super.extractRenderState(entity, state, partialTicks);
 		state.isAngry = entity.isAngry();
 		state.isSitting = entity.isInSittingPose() || entity.isVoluntarySitting();
+		state.lying = entity.isVoluntaryLying();
 		state.tailAngle = entity.getTailAngle();
 		state.headRollAngle = entity.getHeadRollAngle(partialTicks);
 		state.shakeAnim = entity.getShakeAnim(partialTicks);
@@ -40,7 +40,7 @@ public class PugRenderer extends MobRenderer<PugEntity, WolfRenderState, PugMode
 	}
 
 	@Override
-	public Identifier getTextureLocation(WolfRenderState state) {
+	public Identifier getTextureLocation(PugRenderState state) {
 		return state.texture;
 	}
 }

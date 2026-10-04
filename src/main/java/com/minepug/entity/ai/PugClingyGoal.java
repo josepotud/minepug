@@ -34,6 +34,10 @@ public class PugClingyGoal extends Goal {
 			return false;
 		}
 		double stayDistance = BASE_STAY_DISTANCE + (1.0D - this.pug.getClinginess()) * EXTRA_STAY_DISTANCE;
+		// Con frío o mojado se pega más al dueño.
+		if (this.pug.isColdOrWet()) {
+			stayDistance = Math.min(stayDistance, 3.0D);
+		}
 		return this.pug.distanceTo(this.owner) > stayDistance;
 	}
 

@@ -18,6 +18,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
  * Intercepta la cría de animales justo cuando se va a crear la cría de lobo:
  * si ambos padres son lobos (o carlinos), calcula las generaciones que llevan
  * detrás y, con la probabilidad correspondiente, cambia la cría por un carlino.
+ * Dos carlinos siempre tienen carlinos, y a veces nacen camadas (gemelos).
  */
 @Mixin(Animal.class)
 public abstract class AnimalMixin {
@@ -56,8 +57,10 @@ public abstract class AnimalMixin {
 			return offspring;
 		}
 		if (offspring instanceof PugEntity existingPug) {
-			// La cría ya es un carlino (padres carlinos): solo ajusta la generación.
+			// La cría ya es un carlino (padres carlinos): solo ajusta la generación
+			// (la personalidad y el color ya se heredaron dentro de la entidad).
 			((MinepugWolf) existingPug).minepug$setGeneration(childGeneration);
+			this.minepug$maybeSpawnTwin(level, mother, father, childGeneration);
 			return existingPug;
 		}
 
@@ -77,7 +80,39 @@ public abstract class AnimalMixin {
 			);
 		}
 		((MinepugWolf) pug).minepug$setGeneration(childGeneration);
+		// Personalidad y color heredados de los padres carlinos (si los hay).
+		pug.inheritFromParents(mother, father);
+
+		this.minepug$maybeSpawnTwin(level, mother, father, childGeneration);
 
 		return pug;
+	}
+
+	/**
+	 * Camadas: probabilidad pequeña de que nazca otro carlino gemelo,
+	 * que sube con las generaciones de los padres.
+	 */
+	private void minepug$maybeSpawnTwin(ServerLevel level, Wolf mother, Wolf father, int childGeneration) {
+		double twinChance = Math.min(0.10D + 0.05D * childGeneration, 0.35D);
+		if (level.getRandom().nextDouble() >= twinChance) {
+			return;
+		}
+
+		PugEntity twin = MinepugEntityTypes.PUG.create(level, EntitySpawnReason.BREEDING);
+		if (twin == null) {
+			return;
+		}
+		if (mother.isTame()) {
+			twin.setOwnerReference(mother.getOwnerReference());
+			twin.setTame(true, true);
+			((MinepugWolf) twin).minepug$setCollarColor(
+					DyeColor.getMixedColor(level, mother.getCollarColor(), father.getCollarColor())
+			);
+		}
+		((MinepugWolf) twin).minepug$setGeneration(childGeneration);
+		twin.inheritFromParents(mother, father);
+		twin.setBaby(true);
+		twin.snapTo(mother.getX(), mother.getY(), mother.getZ(), 0.0F, 0.0F);
+		level.addFreshEntityWithPassengers(twin);
 	}
 }

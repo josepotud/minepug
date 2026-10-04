@@ -1,5 +1,6 @@
 package com.minepug.client.model;
 
+import com.minepug.client.render.PugRenderState;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -141,7 +142,9 @@ public class PugModel extends EntityModel<WolfRenderState> {
 		// Meneo de la cola (el carlino nunca está enfadado).
 		this.tail.yRot = Mth.cos(animationPos * 0.6662F) * 1.4F * animationSpeed;
 
-		if (state.isSitting) {
+		if (state instanceof PugRenderState pugState && pugState.lying) {
+			this.setSplootPose(state);
+		} else if (state.isSitting) {
 			this.setSittingPose(state);
 		} else {
 			this.rightHindLeg.xRot = Mth.cos(animationPos * 0.6662F) * 1.4F * animationSpeed;
@@ -191,5 +194,29 @@ public class PugModel extends EntityModel<WolfRenderState> {
 		this.leftFrontLeg.xRot = 5.811947F;
 		this.leftFrontLeg.x += 0.01F * ageScale;
 		this.leftFrontLeg.y += 1.0F * ageScale;
+	}
+
+	/**
+	 * Pose de tumbado (sploot): panza en el suelo, patas de atrás estiradas
+	 * hacia atrás y abiertas, patas delanteras estiradas hacia delante.
+	 */
+	private void setSplootPose(WolfRenderState state) {
+		float ageScale = state.ageScale;
+
+		this.body.y += 5.5F * ageScale;
+
+		this.rightHindLeg.y -= 3.0F * ageScale;
+		this.rightHindLeg.xRot = -1.6F;
+		this.rightHindLeg.zRot = -0.9F;
+		this.leftHindLeg.y -= 3.0F * ageScale;
+		this.leftHindLeg.xRot = -1.6F;
+		this.leftHindLeg.zRot = 0.9F;
+
+		this.rightFrontLeg.y -= 3.0F * ageScale;
+		this.rightFrontLeg.xRot = 1.4F;
+		this.leftFrontLeg.y -= 3.0F * ageScale;
+		this.leftFrontLeg.xRot = 1.4F;
+
+		this.tail.y -= 3.0F * ageScale;
 	}
 }

@@ -25,6 +25,7 @@ public class Minepug implements ModInitializer {
 	public void onInitialize() {
 		MinepugEntityTypes.register();
 		MinepugItems.register();
+		MinepugCommands.register();
 
 		// Añade el huevo de carlino a la pestaña de huevos generadores, tras el del lobo.
 		CreativeModeTabEvents.modifyOutputEvent(SPAWN_EGGS_TAB).register(output -> {

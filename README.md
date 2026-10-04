@@ -30,7 +30,7 @@ A **Fabric** mod for **Minecraft Java Edition 26.3 (Wilderness Bound)**. Breed t
 The pug has its own personality on top of the vanilla wolf AI:
 
 - **Less damage** than wolves and **cannot wear wolf armor**.
-- **Alert bark**: when a hostile mob comes close (12 blocks), the pug barks with a sharper pitch than a wolf's growl — even while sitting or away from the player's spawn. If it can reach the mob, it chases it down (without biting) to scare it off; creepers, ghasts and wardens are only watched from a distance.
+- **Alert bark**: when a hostile mob comes close (12 blocks), the pug barks with a sharper pitch than a wolf's growl — even while sitting or away from the player's spawn. If it can reach the mob, it chases it down (without biting) to scare it off; creepers make it run to hide with its owner instead, and ghasts and wardens are only watched from a distance.
 - **Sniffing**: when items are dropped nearby it walks over and sniffs them, head down. If the item is food (bones, meat, anything edible) it eats it after a short pause.
 - **Furnace watch**: if there is food cooking in a nearby furnace (or smoker/blast furnace) it sits down in front of it and watches.
 - **Curiosity**: it occasionally approaches players, passive animals, hostile mobs and dropped items, planting itself and visibly turning and tilting its head to stare at whatever caught its eye.
@@ -39,12 +39,30 @@ The pug has its own personality on top of the vanilla wolf AI:
 
 ## Hidden personality
 
-Every pug rolls two hidden traits on creation (persisted with it):
+Every pug rolls two hidden traits on creation (persisted with it and **inherited from its pug parents**: the average of both parents plus a little variation):
 
-- **Clinginess** (0 = independent, 1 = total velcro dog): higher clinginess keeps it closer to its owner and makes it pay less attention to ambient things (fewer zoomies and curiosities).
+- **Clinginess** (0 = independent, 1 = total velcro dog): higher clinginess keeps it closer to its owner and makes it pay less attention to ambient things (fewer zoomies and curiosities). When it is cold or wet it sticks even closer.
 - **Obedience** (0 = disobedient, 1 = obedient): with low obedience it will more easily get up to do its own thing even after being told to sit. If it is also clingy and can reach you, it comes trotting after you; otherwise it wanders a while within a radius that grows as its obedience drops.
 
-The distance it will travel for ambient activities (sniffing, curiosity, zoomies, furnace watching, chasing) scales with both traits: independent, disobedient pugs roam far; clingy, obedient pugs stay close to you.
+The distance it will travel for ambient activities (sniffing, curiosity, zoomies, furnace watching, chasing, cooling off) scales with both traits: independent, disobedient pugs roam far; clingy, obedient pugs stay close to you.
+
+Use **`/minepug info`** to reveal the traits of the pug nearest to you.
+
+## Colour variant and litters
+
+- **Black pugs**: a rarer variant (10 % of pug births, 30 % with one black parent, 75 % with two). Black parents pass it on; it can also show up from plain pugs. Newborns from spawn eggs have a 15 % chance.
+- **Litters**: pugs sometimes have **twins** — the chance starts at 10 % and grows with the parents' generation (up to 35 %).
+
+## Other quirks
+
+- **Owner reunion**: if you've been away for a couple of minutes it greets you with happy barks and zoomies.
+- **Tail chasing**: some random zoomies are a quick little spin chasing its own tail.
+- **Play with dogs**: when it re-meets a dog it hasn't seen in a while, it runs play circles around it.
+- **Creeper fear**: it never chases creepers; instead it runs to hide with its owner (or flees the other way if it has none).
+- **Heat and cold**: in hot biomes during sunny days it looks for water and lies down to cool off; when it's cold or raining it stays extra close to you.
+- **Sploot**: from time to time it flops belly-down to rest (with little snores), preferring a cushion if there is one nearby.
+- **Begging**: if you hold food it comes over, sits on its own and hops for a treat.
+- **Pug noises**: higher-pitched voice, snorts when sniffing, snores when resting and the occasional pug puff 💨.
 
 Despite all of this... it's still a pug.
 
