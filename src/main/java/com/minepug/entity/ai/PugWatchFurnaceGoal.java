@@ -23,9 +23,11 @@ public class PugWatchFurnaceGoal extends Goal {
 	private static final double OWNER_ARRIVE_DISTANCE = 2.5D;
 	private static final int WATCH_TIME = 200;
 	private static final int MAX_EXTRA_WATCH_TIME = 200;
-	private static final int COOLDOWN_TICKS = 600;
+	private static final int COOLDOWN_TICKS = 300;
 	private static final int MAX_EXTRA_COOLDOWN_TICKS = 600;
 	private static final int RESCAN_INTERVAL = 40;
+	private static final int OWNER_CHASE_TIMEOUT = 200;
+	private static final double OWNER_ABANDON_MAX_DISTANCE = 40.0D;
 
 	private enum Phase {
 		GO_TO_FURNACE,
@@ -40,6 +42,7 @@ public class PugWatchFurnaceGoal extends Goal {
 	private int watchTicks;
 	private int cooldownTicks;
 	private int rescanTicks;
+	private int ownerChaseTicks;
 	private boolean finished;
 
 	public PugWatchFurnaceGoal(PugEntity pug) {
@@ -118,11 +121,19 @@ public class PugWatchFurnaceGoal extends Goal {
 			}
 		}
 
-		// Faldero y desobediente: si puede llegar a su dueño, se va tras él.
-		if (this.pug.shouldGoToOwner()) {
-			this.pug.setVoluntarySitting(false);
-			this.phase = Phase.GO_TO_OWNER;
-			return;
+		// Si el dueño se aleja (sobre todo si es faldero), o es un faldero
+		// desobediente que puede llegar hasta él, deja el horno y se va detrás.
+		LivingEntity owner = this.pug.getOwner();
+		if (owner != null) {
+			double ownerDistance = this.pug.distanceTo(owner);
+			boolean ownerGone = ownerDistance > this.pug.getOwnerFollowDistance()
+					&& ownerDistance < OWNER_ABANDON_MAX_DISTANCE;
+			if (ownerGone || this.pug.shouldGoToOwner()) {
+				this.pug.setVoluntarySitting(false);
+				this.phase = Phase.GO_TO_OWNER;
+				this.ownerChaseTicks = OWNER_CHASE_TIMEOUT;
+				return;
+			}
 		}
 
 		this.watchTicks--;
@@ -133,7 +144,8 @@ public class PugWatchFurnaceGoal extends Goal {
 
 	private void tickGoToOwner() {
 		LivingEntity owner = this.pug.getOwner();
-		if (owner == null) {
+		this.ownerChaseTicks--;
+		if (owner == null || this.ownerChaseTicks <= 0) {
 			this.finished = true;
 			return;
 		}

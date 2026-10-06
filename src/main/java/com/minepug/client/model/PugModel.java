@@ -198,25 +198,33 @@ public class PugModel extends EntityModel<WolfRenderState> {
 
 	/**
 	 * Pose de tumbado (sploot): panza en el suelo, patas de atrás estiradas
-	 * hacia atrás y abiertas, patas delanteras estiradas hacia delante.
+	 * hacia atrás y abiertas, patas delanteras estiradas hacia delante y la
+	 * cola descansando en el suelo. En el espacio del modelo +Y baja hacia
+	 * el suelo (y=24), y +xRot gira la pata hacia atrás.
 	 */
 	private void setSplootPose(WolfRenderState state) {
 		float ageScale = state.ageScale;
 
-		this.body.y += 5.5F * ageScale;
+		// La panza baja un poquito hasta tocar el suelo.
+		this.body.y += 1.5F * ageScale;
 
-		this.rightHindLeg.y -= 3.0F * ageScale;
-		this.rightHindLeg.xRot = -1.6F;
-		this.rightHindLeg.zRot = -0.9F;
-		this.leftHindLeg.y -= 3.0F * ageScale;
-		this.leftHindLeg.xRot = -1.6F;
-		this.leftHindLeg.zRot = 0.9F;
+		// Patas traseras: estiradas hacia atrás y ligeramente abiertas.
+		this.rightHindLeg.y += 6.5F * ageScale;
+		this.rightHindLeg.xRot = 1.4F;
+		this.rightHindLeg.zRot = 0.5F;
+		this.leftHindLeg.y += 6.5F * ageScale;
+		this.leftHindLeg.xRot = 1.4F;
+		this.leftHindLeg.zRot = -0.5F;
 
-		this.rightFrontLeg.y -= 3.0F * ageScale;
-		this.rightFrontLeg.xRot = 1.4F;
-		this.leftFrontLeg.y -= 3.0F * ageScale;
-		this.leftFrontLeg.xRot = 1.4F;
+		// Patas delanteras: estiradas hacia delante y algo abiertas.
+		this.rightFrontLeg.y += 6.5F * ageScale;
+		this.rightFrontLeg.xRot = -1.4F;
+		this.rightFrontLeg.zRot = 0.35F;
+		this.leftFrontLeg.y += 6.5F * ageScale;
+		this.leftFrontLeg.xRot = -1.4F;
+		this.leftFrontLeg.zRot = -0.35F;
 
-		this.tail.y -= 3.0F * ageScale;
+		// Cola: descansando en el suelo.
+		this.tail.y += 6.0F * ageScale;
 	}
 }

@@ -108,16 +108,17 @@ public class PugEntity extends Wolf {
 	@Override
 	protected void registerGoals() {
 		super.registerGoals();
-		// La persecución va por delante de la alerta: si puede perseguir, persigue;
-		// si está sentado (bandera MOVE bloqueada), solo alerta con la mirada.
-		// El miedo a los creepers gana a todo lo demás.
-		this.goalSelector.addGoal(3, new PugFleeCreeperGoal(this));
-		this.goalSelector.addGoal(3, new PugChaseThreatGoal(this));
+		// Prioridades (menor = antes). El peligro va primero; después la
+		// obsesión por la comida (el horno manda sobre el resto de distracciones
+		// ambientales), y muy abajo el agobio de dueño (que además interrumpe
+		// la vigilancia del horno si el dueño se aleja, sobre todo en falderos).
+		this.goalSelector.addGoal(2, new PugFleeCreeperGoal(this));
+		this.goalSelector.addGoal(2, new PugChaseThreatGoal(this));
 		this.goalSelector.addGoal(3, new PugDisobedienceGoal(this));
-		this.goalSelector.addGoal(4, new PugAlertGoal(this));
-		this.goalSelector.addGoal(4, new PugZoomiesGoal(this));
-		this.goalSelector.addGoal(4, new PugWatchFurnaceGoal(this));
+		this.goalSelector.addGoal(3, new PugWatchFurnaceGoal(this));
+		this.goalSelector.addGoal(3, new PugAlertGoal(this));
 		this.goalSelector.addGoal(4, new PugBegGoal(this));
+		this.goalSelector.addGoal(4, new PugZoomiesGoal(this));
 		this.goalSelector.addGoal(5, new PugEatDroppedFoodGoal(this));
 		this.goalSelector.addGoal(5, new PugCuriosityGoal(this));
 		this.goalSelector.addGoal(5, new PugCoolOffGoal(this));
@@ -238,6 +239,14 @@ public class PugEntity extends Wolf {
 		}
 		LivingEntity owner = this.getOwner();
 		return owner != null && this.distanceTo(owner) < 24.0D;
+	}
+
+	/**
+	 * Distancia a la que el carlino deja lo que está haciendo para seguir al
+	 * dueño: cuanto más faldero, antes se va detrás de él.
+	 */
+	public double getOwnerFollowDistance() {
+		return 10.0D + (1.0D - this.clinginess) * 14.0D;
 	}
 
 	// ------------------------------------------------------------------
