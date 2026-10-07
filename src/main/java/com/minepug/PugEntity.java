@@ -8,6 +8,7 @@ import com.minepug.entity.ai.PugCoolOffGoal;
 import com.minepug.entity.ai.PugCuriosityGoal;
 import com.minepug.entity.ai.PugDisobedienceGoal;
 import com.minepug.entity.ai.PugEatDroppedFoodGoal;
+import com.minepug.entity.ai.PugFetchGoal;
 import com.minepug.entity.ai.PugFleeCreeperGoal;
 import com.minepug.entity.ai.PugSplootGoal;
 import com.minepug.entity.ai.PugWatchFurnaceGoal;
@@ -79,11 +80,17 @@ public class PugEntity extends Wolf {
 	private float clinginess;
 	/** Nivel oculto de obediencia: 0 = desobediente, 1 = obediente total. */
 	private float obedience;
+	/** Le gusta jugar a buscar y traer (≈20 % de los carlinos). */
+	private boolean likesFetch;
+	/** De los juguetones, solo ≈40 % traen la pelota; el resto da vueltas. */
+	private boolean fetchBringer;
 
 	public PugEntity(EntityType<? extends Wolf> entityType, Level level) {
 		super(entityType, level);
 		this.clinginess = this.random.nextFloat();
 		this.obedience = this.random.nextFloat();
+		this.likesFetch = this.random.nextFloat() < 0.20F;
+		this.fetchBringer = this.likesFetch && this.random.nextFloat() < 0.40F;
 		// Al nacer (huevo, comandos...) hay una probabilidad pequeña de salir negro.
 		this.setBlack(this.random.nextFloat() < 0.15F);
 	}
@@ -118,6 +125,7 @@ public class PugEntity extends Wolf {
 		this.goalSelector.addGoal(3, new PugWatchFurnaceGoal(this));
 		this.goalSelector.addGoal(3, new PugAlertGoal(this));
 		this.goalSelector.addGoal(4, new PugBegGoal(this));
+		this.goalSelector.addGoal(4, new PugFetchGoal(this));
 		this.goalSelector.addGoal(4, new PugZoomiesGoal(this));
 		this.goalSelector.addGoal(5, new PugEatDroppedFoodGoal(this));
 		this.goalSelector.addGoal(5, new PugCuriosityGoal(this));
@@ -156,6 +164,21 @@ public class PugEntity extends Wolf {
 	/** ¿Es comida (para mirar si hay en un horno)? */
 	public boolean isPugFood(ItemStack stack) {
 		return !stack.isEmpty() && stack.has(DataComponents.FOOD);
+	}
+
+	/** ¿Es un juguete de buscar (pelota, palo, hueso, slime ball...)? */
+	public boolean isFetchToy(ItemStack stack) {
+		return stack.is(MinepugItems.FETCH_TOYS);
+	}
+
+	/** ¿Le gusta jugar a buscar y traer? */
+	public boolean likesFetch() {
+		return this.likesFetch;
+	}
+
+	/** De los que juegan a buscar, ¿trae la pelota (o solo da vueltas con ella)? */
+	public boolean isFetchBringer() {
+		return this.fetchBringer;
 	}
 
 	/** Reproduce un sonido vanilla (del lobo) por su identificador. */
@@ -400,6 +423,8 @@ public class PugEntity extends Wolf {
 		output.putFloat("minepug_clinginess", this.clinginess);
 		output.putFloat("minepug_obedience", this.obedience);
 		output.putBoolean("minepug_black", this.isBlack());
+		output.putBoolean("minepug_likes_fetch", this.likesFetch);
+		output.putBoolean("minepug_fetch_bringer", this.fetchBringer);
 	}
 
 	@Override
@@ -408,6 +433,8 @@ public class PugEntity extends Wolf {
 		this.clinginess = input.getFloatOr("minepug_clinginess", this.clinginess);
 		this.obedience = input.getFloatOr("minepug_obedience", this.obedience);
 		this.setBlack(input.getBooleanOr("minepug_black", this.isBlack()));
+		this.likesFetch = input.getBooleanOr("minepug_likes_fetch", this.likesFetch);
+		this.fetchBringer = input.getBooleanOr("minepug_fetch_bringer", this.fetchBringer);
 	}
 
 	/**

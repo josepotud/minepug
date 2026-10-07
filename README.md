@@ -46,7 +46,7 @@ Every pug rolls two hidden traits on creation (persisted with it and **inherited
 
 The distance it will travel for ambient activities (sniffing, curiosity, zoomies, furnace watching, chasing, cooling off) scales with both traits: independent, disobedient pugs roam far; clingy, obedient pugs stay close to you.
 
-Use **`/minepug info`** to reveal the traits of the pug nearest to you.
+Use **`/minepug info`** to reveal the traits of the pug nearest to you (including whether it likes fetch games and whether it brings the toy back).
 
 ## Colour variant and litters
 
@@ -61,6 +61,7 @@ Use **`/minepug info`** to reveal the traits of the pug nearest to you.
 - **Creeper fear**: it never chases creepers; instead it runs to hide with its owner (or flees the other way if it has none).
 - **Heat and cold**: in hot biomes during sunny days it looks for water and lies down to cool off; when it's cold or raining it stays extra close to you.
 - **Sploot**: from time to time it flops belly-down to rest (with little snores), preferring a cushion if there is one nearby.
+- **Fetch games**: some pugs (about 20 %) love to play fetch. Throw the **Pug Ball** (right-click to throw it: it flies like a snowball but does not break) or a stick / bone / slime ball — anything in the `minepug:fetch_toys` item tag. The pug runs to get it; 40 % of the fetch lovers bring it back to their owner, the rest run circles around the owner carrying it in their mouth before dropping it. The Pug Ball **cannot be crafted**: it shows up rarely (≈4 %) in dungeon, village and abandoned mineshaft chests, so the game does not happen constantly.
 - **Begging**: if you hold food it comes over, sits on its own and hops for a treat.
 - **Pug noises**: higher-pitched voice, snorts when sniffing, snores when resting and the occasional pug puff 💨.
 

@@ -21,15 +21,25 @@ public class Minepug implements ModInitializer {
 	private static final ResourceKey<CreativeModeTab> SPAWN_EGGS_TAB =
 			ResourceKey.create(Registries.CREATIVE_MODE_TAB, Identifier.withDefaultNamespace("spawn_eggs"));
 
+	/** Pestaña "Herramientas y utilidades" del inventario creativo. */
+	private static final ResourceKey<CreativeModeTab> TOOLS_TAB =
+			ResourceKey.create(Registries.CREATIVE_MODE_TAB, Identifier.withDefaultNamespace("tools_and_utilities"));
+
 	@Override
 	public void onInitialize() {
 		MinepugEntityTypes.register();
 		MinepugItems.register();
 		MinepugCommands.register();
+		MinepugLoot.register();
 
 		// Añade el huevo de carlino a la pestaña de huevos generadores, tras el del lobo.
 		CreativeModeTabEvents.modifyOutputEvent(SPAWN_EGGS_TAB).register(output -> {
 			output.insertAfter(Items.WOLF_SPAWN_EGG, MinepugItems.PUG_SPAWN_EGG);
+		});
+
+		// La pelota de carlino aparece en herramientas y utilidades.
+		CreativeModeTabEvents.modifyOutputEvent(TOOLS_TAB).register(output -> {
+			output.accept(MinepugItems.PUG_BALL);
 		});
 
 		LOGGER.info("¡Minepug listo! Cría lobos domesticados durante generaciones para conseguir un carlino.");

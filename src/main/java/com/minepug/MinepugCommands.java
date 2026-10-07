@@ -50,12 +50,17 @@ public final class MinepugCommands {
 		int generation = ((MinepugWolf) pug).minepug$getGeneration();
 
 		source.sendSuccess(() -> Component.literal(String.format(
-				"%s | generación %d | faldero %.0f%% | obediencia %.0f%% | %s",
+				"%s | generación %d | faldero %.0f%% | obediencia %.0f%% | %s | %s",
 				pug.getName().getString(),
 				generation,
 				pug.getClinginess() * 100.0F,
 				pug.getObedience() * 100.0F,
-				pug.isBlack() ? "carlino negro" : "carlino leonado"
+				pug.isBlack() ? "carlino negro" : "carlino leonado",
+				!pug.likesFetch()
+						? "no le gusta buscar juguetes"
+						: (pug.isFetchBringer()
+								? "busca juguetes y los trae"
+								: "busca juguetes y da vueltas con ellos")
 		)), false);
 		return 1;
 	}
