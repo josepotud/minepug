@@ -208,20 +208,22 @@ public class PugModel extends EntityModel<WolfRenderState> {
 		// La panza baja un poquito hasta tocar el suelo.
 		this.body.y += 1.5F * ageScale;
 
-		// Patas traseras: estiradas hacia atrás y ligeramente abiertas.
-		this.rightHindLeg.y += 6.5F * ageScale;
-		this.rightHindLeg.xRot = 1.4F;
+		// Patas traseras: estiradas hacia atrás, planas sobre la superficie
+		// (la altura del pivote está calculada para que la pata quede apoyada
+		// sin atravesar el suelo/cama).
+		this.rightHindLeg.y += 4.3F * ageScale;
+		this.rightHindLeg.xRot = 1.55F;
 		this.rightHindLeg.zRot = 0.5F;
-		this.leftHindLeg.y += 6.5F * ageScale;
-		this.leftHindLeg.xRot = 1.4F;
+		this.leftHindLeg.y += 4.3F * ageScale;
+		this.leftHindLeg.xRot = 1.55F;
 		this.leftHindLeg.zRot = -0.5F;
 
-		// Patas delanteras: estiradas hacia delante y algo abiertas.
-		this.rightFrontLeg.y += 6.5F * ageScale;
-		this.rightFrontLeg.xRot = -1.4F;
+		// Patas delanteras: estiradas hacia delante, planas sobre la superficie.
+		this.rightFrontLeg.y += 4.3F * ageScale;
+		this.rightFrontLeg.xRot = -1.55F;
 		this.rightFrontLeg.zRot = 0.35F;
-		this.leftFrontLeg.y += 6.5F * ageScale;
-		this.leftFrontLeg.xRot = -1.4F;
+		this.leftFrontLeg.y += 4.3F * ageScale;
+		this.leftFrontLeg.xRot = -1.55F;
 		this.leftFrontLeg.zRot = -0.35F;
 
 		// Cola: descansando en el suelo.

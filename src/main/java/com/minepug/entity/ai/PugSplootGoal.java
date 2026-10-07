@@ -18,14 +18,15 @@ import net.minecraft.world.phys.AABB;
  * se tumba donde esté.
  */
 public class PugSplootGoal extends Goal {
-	private static final int CHECK_CHANCE = 200;
+	private static final int CHECK_CHANCE = 120;
 	private static final int MIN_LIE_TIME = 600;
 	private static final int MAX_EXTRA_LIE_TIME = 1200;
 	private static final int COOLDOWN_TICKS = 600;
 	private static final int MAX_EXTRA_COOLDOWN_TICKS = 1200;
 	private static final double SPOT_SEARCH_RANGE = 8.0D;
-	private static final double BED_ARRIVE_DISTANCE = 1.8D;
-	private static final double CUSHION_ARRIVE_DISTANCE = 1.6D;
+	private static final double BED_ARRIVE_DISTANCE = 2.0D;
+	private static final double CUSHION_ARRIVE_DISTANCE = 2.0D;
+	private static final int APPROACH_TIMEOUT = 300;
 	private static final int SNORE_INTERVAL = 80;
 	private static final int MAX_EXTRA_SNORE_INTERVAL = 60;
 
@@ -44,11 +45,15 @@ public class PugSplootGoal extends Goal {
 	private int lieTicks;
 	private int cooldownTicks;
 	private int snoreTicks;
+	private int approachTicks;
 	private boolean finished;
 
 	public PugSplootGoal(PugEntity pug) {
 		this.pug = pug;
 		this.level = getServerLevel(pug);
+		// Reclama el control del movimiento mientras busca sitio o está tumbado,
+		// para que otros goals no se peleen con él.
+		this.setFlags(java.util.EnumSet.of(Flag.MOVE, Flag.LOOK));
 	}
 
 	@Override
@@ -97,6 +102,7 @@ public class PugSplootGoal extends Goal {
 	public void start() {
 		this.finished = false;
 		this.snoreTicks = SNORE_INTERVAL;
+		this.approachTicks = APPROACH_TIMEOUT;
 		this.lieTicks = MIN_LIE_TIME + this.pug.getRandom().nextInt(MAX_EXTRA_LIE_TIME);
 		if (this.bedPos != null) {
 			this.phase = Phase.GO_TO_BED;
@@ -117,7 +123,7 @@ public class PugSplootGoal extends Goal {
 	}
 
 	private void tickGoToBed() {
-		if (this.bedPos == null) {
+		if (this.bedPos == null || --this.approachTicks <= 0) {
 			this.beginLying();
 			return;
 		}
@@ -135,7 +141,7 @@ public class PugSplootGoal extends Goal {
 	}
 
 	private void tickGoToCushion() {
-		if (this.cushion == null || !this.cushion.isAlive()) {
+		if (this.cushion == null || !this.cushion.isAlive() || --this.approachTicks <= 0) {
 			this.beginLying();
 			return;
 		}
@@ -155,6 +161,22 @@ public class PugSplootGoal extends Goal {
 	}
 
 	private void tickLying() {
+		// Si se cae de la cama o del cojín (le empujan, se resbala...), se levanta.
+		if (this.bedPos != null) {
+			double topY = this.bedPos.getY() + this.bedSurfaceY;
+			boolean offBed = this.pug.getY() < topY - 0.35D
+					|| this.pug.distanceToSqr(this.bedPos.getX() + 0.5D, topY, this.bedPos.getZ() + 0.5D) > 4.0D;
+			if (offBed) {
+				this.finished = true;
+				return;
+			}
+		} else if (this.cushion != null) {
+			if (!this.cushion.isAlive() || this.pug.getVehicle() == null) {
+				this.finished = true;
+				return;
+			}
+		}
+
 		// Ronquiditos de vez en cuando.
 		this.snoreTicks--;
 		if (this.snoreTicks <= 0) {
