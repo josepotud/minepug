@@ -15,11 +15,16 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * Juego de buscar: si al carlino le gusta (≈20 %) y hay un juguete tirado
- * lejos del dueño (la pelota lanzada, un palo...), va a por él y lo coge.
+ * lejos del dueño, va a por él y lo coge.
  * <ul>
  *   <li>El 40 % de los juguetones lo <b>trae</b> de vuelta al dueño.</li>
  *   <li>El resto se pone a <b>dar vueltas</b> alrededor del dueño con el
- *       juguete en la boca durante un rato y luego lo suelta.</li>
+ *       juguete en la boca un rato y luego lo suelta (también lo suelta si
+ *       lleva mucho tiempo sin que se lo quiten).</li>
+ *   <li>Si otro carlino quiere la misma pelota, se <b>pelean sin hacerse
+ *       daño</b> (gruñidos, saltitos y caras) y uno se rinde.</li>
+ *   <li>Si ya hay un juguete disponible cerca del dueño, no traen más:
+ *       usan el que hay.</li>
  * </ul>
  */
 public class PugFetchGoal extends Goal {
@@ -28,6 +33,7 @@ public class PugFetchGoal extends Goal {
 	private static final double TOY_REACH_DISTANCE = 1.2D;
 	private static final double RETURN_DISTANCE = 2.5D;
 	private static final double MIN_THROW_DISTANCE_FROM_OWNER = 3.0D;
+	private static final double AVAILABLE_NEAR_OWNER_RANGE = 10.0D;
 	private static final int CIRCLE_TIME = 80;
 	private static final int MAX_EXTRA_CIRCLE_TIME = 60;
 	private static final double CIRCLE_RADIUS = 2.5D;
@@ -35,11 +41,20 @@ public class PugFetchGoal extends Goal {
 	private static final double ANGLE_STEP = Math.PI / 45.0;
 	private static final int COOLDOWN_TICKS = 200;
 	private static final int MAX_EXTRA_COOLDOWN_TICKS = 200;
-	/** Tiempo máximo de posesión del juguete (para no llevarlo para siempre). */
-	private static final int MAX_CARRY_TIME = 600;
+	private static final int FIGHT_COOLDOWN_TICKS = 600;
+	private static final int MAX_EXTRA_FIGHT_COOLDOWN = 400;
+	private static final int FIGHT_TIME = 60;
+	private static final int MAX_EXTRA_FIGHT_TIME = 40;
+	private static final double FIGHT_DISTANCE = 1.3D;
+	private static final double RIVAL_RANGE = 10.0D;
+	private static final float FIGHT_WIN_CHANCE = 0.5F;
+	private static final int FIGHT_BARK_COOLDOWN = 30;
+	/** Tiempo máximo de posesión del juguete: luego lo tira. */
+	private static final int MAX_CARRY_TIME = 400;
 
 	private enum Phase {
 		GO_TO_TOY,
+		FIGHTING,
 		RETURNING,
 		CIRCLING
 	}
@@ -48,13 +63,17 @@ public class PugFetchGoal extends Goal {
 	private final ServerLevel level;
 	private ItemEntity toy;
 	private LivingEntity owner;
+	private PugEntity rival;
 	private Phase phase = Phase.GO_TO_TOY;
 	private int cooldownTicks;
 	private int circleTicks;
 	private int carryTicks;
+	private int fightTicks;
+	private int barkTicks;
 	private double circleAngle;
 	private double circleDirection;
 	private boolean carrying;
+	private boolean fought;
 	private boolean finished;
 
 	public PugFetchGoal(PugEntity pug) {
@@ -76,8 +95,25 @@ public class PugFetchGoal extends Goal {
 		if (this.owner == null || this.pug.distanceTo(this.owner) > OWNER_RANGE) {
 			return false;
 		}
+		// Si ya hay un juguete disponible cerca del dueño, no traen más:
+		// juegan con el que ya está.
+		if (this.anyToyNearOwner()) {
+			return false;
+		}
 		this.toy = this.findToy();
 		return this.toy != null;
+	}
+
+	/** ¿Hay algún juguete ya disponible cerca del dueño? */
+	private boolean anyToyNearOwner() {
+		if (this.owner == null) {
+			return false;
+		}
+		AABB area = this.owner.getBoundingBox().inflate(AVAILABLE_NEAR_OWNER_RANGE);
+		List<ItemEntity> toys = this.level.getEntities(EntityTypeTest.forClass(ItemEntity.class), area, item ->
+				item.isAlive() && this.pug.isFetchToy(item.getItem())
+		);
+		return !toys.isEmpty();
 	}
 
 	/** Busca el juguete más cercano que esté "lanzado" (lejos del dueño). */
@@ -87,7 +123,6 @@ public class PugFetchGoal extends Goal {
 		List<ItemEntity> toys = this.level.getEntities(EntityTypeTest.forClass(ItemEntity.class), area, item ->
 				item.isAlive()
 						&& !item.isRemoved()
-						&& item.getVehicle() == null
 						&& this.pug.isFetchToy(item.getItem())
 						&& this.owner != null
 						&& this.owner.distanceToSqr(item) > MIN_THROW_DISTANCE_FROM_OWNER * MIN_THROW_DISTANCE_FROM_OWNER
@@ -112,9 +147,12 @@ public class PugFetchGoal extends Goal {
 		this.finished = false;
 		this.carrying = false;
 		this.carryTicks = 0;
+		this.fought = false;
+		this.rival = null;
 		this.phase = Phase.GO_TO_TOY;
 		this.circleAngle = this.pug.getRandom().nextDouble() * Math.PI * 2.0;
 		this.circleDirection = this.pug.getRandom().nextBoolean() ? 1.0D : -1.0D;
+		this.pug.setPugFetchTarget(this.toy);
 	}
 
 	@Override
@@ -124,10 +162,85 @@ public class PugFetchGoal extends Goal {
 			return;
 		}
 
+		// ¿Otro carlino quiere la misma pelota? Pelea sin daño.
+		if (this.phase != Phase.FIGHTING) {
+			PugEntity other = this.findRival();
+			if (other != null) {
+				this.startFight(other);
+			}
+		}
+
 		switch (this.phase) {
 			case GO_TO_TOY -> this.tickGoToToy();
+			case FIGHTING -> this.tickFighting();
 			case RETURNING -> this.tickReturning();
 			case CIRCLING -> this.tickCircling();
+		}
+	}
+
+	/**
+	 * Busca otro carlino que quiera la misma pelota: o la está persiguiendo
+	 * (lo sabemos por su objetivo de buscar) o la lleva encima.
+	 */
+	private PugEntity findRival() {
+		if (this.toy.getVehicle() instanceof PugEntity carrier && carrier != this.pug) {
+			return carrier;
+		}
+		AABB area = this.pug.getBoundingBox().inflate(RIVAL_RANGE);
+		List<PugEntity> pugs = this.level.getEntities(EntityTypeTest.forClass(PugEntity.class), area, other ->
+				other != this.pug
+						&& other.isAlive()
+						&& other.getPugFetchTarget() == this.toy
+		);
+		return pugs.stream()
+				.min(Comparator.comparingDouble(this.pug::distanceToSqr))
+				.orElse(null);
+	}
+
+	private void startFight(PugEntity other) {
+		this.rival = other;
+		this.fought = true;
+		this.phase = Phase.FIGHTING;
+		this.fightTicks = FIGHT_TIME + this.pug.getRandom().nextInt(MAX_EXTRA_FIGHT_TIME);
+		this.barkTicks = 0;
+		this.pug.getNavigation().stop();
+	}
+
+	private void tickFighting() {
+		if (this.rival == null || !this.rival.isAlive()) {
+			this.rival = null;
+			this.phase = Phase.GO_TO_TOY;
+			return;
+		}
+
+		this.pug.getLookControl().setLookAt(this.rival, 20.0F, this.pug.getMaxHeadXRot());
+		if (this.pug.distanceTo(this.rival) > FIGHT_DISTANCE) {
+			this.pug.getNavigation().moveTo(this.rival, 1.2D);
+		} else {
+			this.pug.getNavigation().stop();
+		}
+
+		// Gruñidos, saltitos y caras: pelea de mentira, sin daño.
+		this.barkTicks--;
+		if (this.barkTicks <= 0) {
+			this.barkTicks = FIGHT_BARK_COOLDOWN;
+			this.pug.pugPlaySound(Identifier.withDefaultNamespace("entity.wolf.growl"), 0.9F, 1.6F);
+			if (this.pug.onGround()) {
+				this.pug.getJumpControl().jump();
+			}
+		}
+
+		this.fightTicks--;
+		if (this.fightTicks <= 0) {
+			boolean won = this.pug.getRandom().nextFloat() < FIGHT_WIN_CHANCE;
+			boolean toyTakenByRival = this.toy.getVehicle() instanceof PugEntity carrier && carrier != this.pug;
+			this.rival = null;
+			if (won && !toyTakenByRival) {
+				this.phase = Phase.GO_TO_TOY;
+			} else {
+				// Se rinde: a otra cosa.
+				this.finished = true;
+			}
 		}
 	}
 
@@ -166,7 +279,6 @@ public class PugFetchGoal extends Goal {
 		}
 		// Deja la pelota a los pies del dueño y se alegra.
 		this.pug.getNavigation().stop();
-		this.dropToy();
 		this.pug.getMoveControl().setWait();
 		if (this.pug.canPugBark(40)) {
 			this.pug.markPugBarked();
@@ -192,7 +304,7 @@ public class PugFetchGoal extends Goal {
 
 		this.circleTicks--;
 		if (this.circleTicks <= 0) {
-			this.dropToy();
+			// Si no se la has cogido, la tira.
 			this.finished = true;
 		}
 	}
@@ -209,10 +321,16 @@ public class PugFetchGoal extends Goal {
 	@Override
 	public void stop() {
 		this.dropToy();
+		this.pug.setPugFetchTarget(null);
 		this.pug.getMoveControl().setWait();
 		this.pug.getNavigation().stop();
 		this.toy = null;
+		this.rival = null;
 		this.finished = false;
-		this.cooldownTicks = COOLDOWN_TICKS + this.pug.getRandom().nextInt(MAX_EXTRA_COOLDOWN_TICKS);
+		if (this.fought) {
+			this.cooldownTicks = FIGHT_COOLDOWN_TICKS + this.pug.getRandom().nextInt(MAX_EXTRA_FIGHT_COOLDOWN);
+		} else {
+			this.cooldownTicks = COOLDOWN_TICKS + this.pug.getRandom().nextInt(MAX_EXTRA_COOLDOWN_TICKS);
+		}
 	}
 }

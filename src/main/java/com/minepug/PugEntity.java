@@ -1,6 +1,7 @@
 package com.minepug;
 
 import com.minepug.entity.ai.PugAlertGoal;
+import com.minepug.entity.ai.PugBegChestGoal;
 import com.minepug.entity.ai.PugBegGoal;
 import com.minepug.entity.ai.PugChaseThreatGoal;
 import com.minepug.entity.ai.PugClingyGoal;
@@ -35,6 +36,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.wolf.Wolf;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
@@ -127,6 +129,7 @@ public class PugEntity extends Wolf {
 		this.goalSelector.addGoal(4, new PugBegGoal(this));
 		this.goalSelector.addGoal(4, new PugFetchGoal(this));
 		this.goalSelector.addGoal(4, new PugZoomiesGoal(this));
+		this.goalSelector.addGoal(5, new PugBegChestGoal(this));
 		this.goalSelector.addGoal(5, new PugEatDroppedFoodGoal(this));
 		this.goalSelector.addGoal(5, new PugCuriosityGoal(this));
 		this.goalSelector.addGoal(5, new PugCoolOffGoal(this));
@@ -179,6 +182,20 @@ public class PugEntity extends Wolf {
 	/** De los que juegan a buscar, ¿trae la pelota (o solo da vueltas con ella)? */
 	public boolean isFetchBringer() {
 		return this.fetchBringer;
+	}
+
+	/**
+	 * Juguete que este carlino está buscando ahora mismo. Lo usan los demás
+	 * carlinos para saber que quieren la misma pelota (y pelearse sin daño).
+	 */
+	private ItemEntity pugFetchTarget;
+
+	public ItemEntity getPugFetchTarget() {
+		return this.pugFetchTarget;
+	}
+
+	public void setPugFetchTarget(ItemEntity toy) {
+		this.pugFetchTarget = toy;
 	}
 
 	/** Reproduce un sonido vanilla (del lobo) por su identificador. */
